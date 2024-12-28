@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"fmt"
+	"mime"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -106,6 +108,8 @@ func DownloadFileHandler(c *gin.Context) {
 
 	var bucketFileName string
 	var fileFullName string
+	var fileExtension string
+	var fileSize int64
 
 	// Si UUID tiene 8 caracteres, se busca en Firestore
 	if len(fileUUID) == 8 {
@@ -152,6 +156,8 @@ func DownloadFileHandler(c *gin.Context) {
 		fileUUID = metadata[0]["idDoc"].(string)
 		bucketFileName = fileUUID + metadata[0]["extension"].(string)
 		fileFullName = metadata[0]["fullName"].(string)
+		fileExtension = metadata[0]["extension"].(string)
+		fileSize = metadata[0]["size"].(int64)
 	} else {
 		_, err := uuid.Parse(fileUUID)
 
@@ -182,6 +188,8 @@ func DownloadFileHandler(c *gin.Context) {
 
 		bucketFileName = fileUUID + metadata["extension"].(string)
 		fileFullName = metadata["fullName"].(string)
+		fileExtension = metadata["extension"].(string)
+		fileSize = metadata["size"].(int64)
 	}
 
 	/// Crear archivo temporal seguro
@@ -211,14 +219,16 @@ func DownloadFileHandler(c *gin.Context) {
 		return
 	}
 
-	// Enviar el archivo como respuesta
-	c.Header("Content-Disposition", "attachment; filename="+fileFullName)
-	c.File(tempFile.Name())
-
-	/* message := "file found"
-	errData := map[string]interface{}{
-		"fileUUID": fileUUID,
+	// Usar mime.TypeByExtension para obtener el tipo MIME
+	contentType := mime.TypeByExtension(fileExtension)
+	if contentType == "" {
+		contentType = "application/octet-stream" // Tipo predeterminado si no se encuentra
 	}
 
-	c.IndentedJSON(http.StatusOK, responses.Success(message, errData)) */
+	c.Header("Content-Type", contentType)
+	c.Header("Content-Disposition", "attachment; filename="+fileFullName)
+	c.Header("Content-Length", fmt.Sprintf("%d", fileSize))
+
+	// Enviar el archivo como respuesta
+	c.File(tempFile.Name())
 }
