@@ -17,6 +17,7 @@ func main() {
 	firebase.InitializeFirebase()
 	firebase.InitializeStorage()
 	firebase.InitializeFirestore()
+	firebase.InitializeAuthentication()
 
 	// Cerrar Firestore al finalizar
 	defer firebase.CloseFirestore()

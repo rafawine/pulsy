@@ -104,7 +104,7 @@ func UploadFileHandler(c *gin.Context) {
 }
 
 func DownloadFileHandler(c *gin.Context) {
-	fileUUID := c.Param("fileUUID") // Nombre del archivo en Firebase
+	fileUUID := c.Param("uuid") // Nombre del archivo en Firebase
 
 	var bucketFileName string
 	var fileFullName string

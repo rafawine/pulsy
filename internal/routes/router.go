@@ -3,6 +3,7 @@ package routes
 import (
 	"os"
 	"pulsy/internal/handlers"
+	"pulsy/internal/middleware"
 
 	"github.com/gin-gonic/gin"
 )
@@ -16,9 +17,18 @@ func SetupRouter() *gin.Engine {
 	// Health Check
 	router.GET("/health", handlers.HealthCheckHandler)
 
-	// File Routes
-	router.POST("/upload", handlers.UploadFileHandler)
-	router.GET("/download/:fileUUID", handlers.DownloadFileHandler)
+	protected := router.Group("/api", middleware.VerifyTokenOfFirebase)
+
+	protected.POST("/upload", handlers.UploadFileHandler)
+	protected.GET("/download/:uuid", handlers.DownloadFileHandler)
+
+	// Auth Routes
+	router.GET("/user/:uid", handlers.GetUser)
+
+	router.POST("/token", handlers.GenerateAccessTokenByUserID)
+
+	// Websocket routes
+	protected.GET("/ws", handlers.Websocket)
 
 	return router
 }
