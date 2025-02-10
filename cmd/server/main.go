@@ -11,7 +11,7 @@ import (
 
 func main() {
 	// Obtener puerto de ejecución
-	port := os.Getenv("PORT")
+	port := os.Getenv("PULSY_PORT")
 
 	// Inicializar Firebase
 	firebase.InitializeFirebase()

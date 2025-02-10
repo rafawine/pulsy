@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	firebase "firebase.google.com/go/v4"
@@ -16,17 +17,17 @@ var FirebaseApp *firebase.App
 func InitializeFirebase() {
 	// Crear el objeto de credenciales desde las variables de entorno
 	credentials := map[string]string{
-		"type":                        os.Getenv("FIREBASE_TYPE"),
-		"project_id":                  os.Getenv("FIREBASE_PROJECT_ID"),
-		"private_key_id":              os.Getenv("FIREBASE_PRIVATE_KEY_ID"),
-		"private_key":                 os.Getenv("FIREBASE_PRIVATE_KEY"),
-		"client_email":                os.Getenv("FIREBASE_CLIENT_EMAIL"),
-		"client_id":                   os.Getenv("FIREBASE_CLIENT_ID"),
-		"auth_uri":                    os.Getenv("FIREBASE_AUTH_URI"),
-		"token_uri":                   os.Getenv("FIREBASE_TOKEN_URI"),
-		"auth_provider_x509_cert_url": os.Getenv("FIREBASE_AUTH_PROVIDER_X509"),
-		"client_x509_cert_url":        os.Getenv("FIREBASE_CLIENT_X509"),
-		"universe_domain":             os.Getenv("FIREBASE_UNIVERSE_DOMAIN"),
+		"type":                        os.Getenv("PULSY_TYPE"),
+		"project_id":                  os.Getenv("PULSY_PROJECT_ID"),
+		"private_key_id":              os.Getenv("PULSY_PRIVATE_KEY_ID"),
+		"private_key":                 strings.ReplaceAll(os.Getenv("PULSY_PRIVATE_KEY"), "\\n", "\n"),
+		"client_email":                os.Getenv("PULSY_CLIENT_EMAIL"),
+		"client_id":                   os.Getenv("PULSY_CLIENT_ID"),
+		"auth_uri":                    os.Getenv("PULSY_AUTH_URI"),
+		"token_uri":                   os.Getenv("PULSY_TOKEN_URI"),
+		"auth_provider_x509_cert_url": os.Getenv("PULSY_AUTH_PROVIDER_X509"),
+		"client_x509_cert_url":        os.Getenv("PULSY_CLIENT_X509"),
+		"universe_domain":             os.Getenv("PULSY_UNIVERSE_DOMAIN"),
 	}
 
 	// Convertir las credenciales a JSON
