@@ -1,0 +1,25 @@
+pipeline{
+    agent any
+
+    tools {
+        go '1.23.6'
+    }
+
+    stages{
+        /* stage("github_repository"){
+            steps{
+                git 'git@github.com:rafawine/pulsy.git'
+            }
+        } */
+        stage("build_app"){
+            steps{
+                sh './jenkins/build.sh'
+            }
+        }
+        stage("create_service"){
+            steps{
+                sh './jenkins/build.sh'
+            }
+        }
+    }
+}
