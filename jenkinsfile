@@ -6,11 +6,11 @@ pipeline{
     }
 
     stages{
-        stage("github_repository"){
+        /* stage("github_repository"){
             steps{
                 git 'git@github.com:rafawine/pulsy.git'
             }
-        }
+        } */
         stage("build_app"){
             steps{
                 sh './jenkins/build.sh'
