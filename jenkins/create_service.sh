@@ -19,20 +19,29 @@ create_service() {
   user="jenkins"
   execute="path/path"
 
-  # Verifica que el archivo template exista
-    if [ ! -f "$TEMPLATE_FILE" ]; then
-        echo "Error: Archivo de plantilla $TEMPLATE_FILE no encontrado."
-        return 1 # Código de error
-    fi
+  cat << EOF > "$SERVICE_FILE"
+[Unit]
+Description="$descripcion"
+After=network.target
 
-  # Uso de sed para crear el archivo .service (con manejo de errores)
-  if ! sed -e "s/@DESCRIPCION@/$descripcion/" -e "s/@WORK_DIR@/$working_directory/" -e "s/@USR@/$user/" -e "s/@EXEC@/$execute/" "$TEMPLATE_FILE" > "$SERVICE_FILE"; then
-    echo "Error: Falló la creación del archivo $SERVICE_FILE."
-    return 1 # Código de error
+[Service]
+Type=simple
+WorkingDirectory="$working_directory"
+User="$user"
+ExecStart="$execute"
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+  if [ $? -eq 0 ]; then  # Verifica el código de salida de cat
+    echo "Archivo de servicio $JOB_NAME.service creado exitosamente."
+    return 0  # Código de éxito
+  else
+    echo "Error: Falló la creación del archivo de servicio."
+    return 1  # Código de error
   fi
-
-  echo "Servicio $JOB_NAME creado exitosamente en $SERVICE_FILE."
-  return 0 # Código de éxito
 }
 
 # Verificación y creación del directorio (con manejo de errores)
