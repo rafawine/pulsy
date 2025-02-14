@@ -1,8 +1,7 @@
 #!/bin/bash
 
 # Variables importantes al principio y en mayúsculas para mejor visibilidad
-SERVICES_DIR="/var/lib/jenkins/workspace/services"
-TEMPLATE_FILE="./jenkins/systemd.template"  # Ruta relativa al script
+SERVICES_DIR="$HOME/workspace/services"
 SERVICE_FILE="$SERVICES_DIR/$JOB_NAME.service"
 
 # Función principal (mejor modularización)
@@ -15,9 +14,9 @@ create_service() {
 
   # Definición de variables (podrían ser argumentos de la función)
   descripcion="file transfer api"
-  working_directory="path/path"
-  user="jenkins"
-  execute="path/path"
+  working_directory="$WORKSPACE"
+  user="$USER"
+  execute="$WORKSPACE/tmp/$JOB_NAME"
 
   cat << EOF > "$SERVICE_FILE"
 [Unit]

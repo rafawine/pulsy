@@ -1,4 +1,16 @@
 #!/bin/bash
 
-go version
-go build -o ./tmp/$JOB_NAME ./cmd/server
+# Mejoras al código sh
+
+# 1. Manejo de errores: Verifica si go version y go build tienen éxito.
+if ! go version &> /dev/null; then
+  echo "Error: go no está instalado o no está en el PATH."
+  exit 1
+fi
+
+if ! go build -o ./tmp/$JOB_NAME ./cmd/server; then
+  echo "Error: Falló la compilación del servidor."
+  exit 1
+fi
+
+echo "Aplicación compilada exitosamente"

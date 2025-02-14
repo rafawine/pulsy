@@ -1,3 +1,3 @@
 #!/bin/bash
 
-echo "env | sort"
+echo "se laza el servico"
