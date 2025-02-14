@@ -1,3 +1,3 @@
 #!/bin/bash
 
-echo "se ejcuta app"
+echo "env | sort"
