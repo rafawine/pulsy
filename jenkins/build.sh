@@ -9,8 +9,10 @@ if ! go version &> /dev/null; then
 fi
 
 if ! go build -o ./tmp/$JOB_NAME ./cmd/server; then
-  echo "Error: Falló la compilación del servidor."
+  echo "Error: Falló la compilación de la aplicación."
   exit 1
 fi
 
 echo "Aplicación compilada exitosamente"
+
+exit 0 # Salida del script con éxito

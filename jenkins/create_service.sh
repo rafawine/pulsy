@@ -3,7 +3,8 @@
 # Variables importantes al principio y en mayúsculas para mejor visibilidad
 SERVICES_DIR="$HOME/workspace/services"
 SERVICE_FILE="$SERVICES_DIR/$JOB_NAME.service"
-SERVICE_LN_FILE="/etc/systemd/system/$JOB_NAME.service"
+LN_SERVICES_DIR="/etc/systemd/system"
+LN_SERVICE_FILE="$SERVICES_LN_DIR/$JOB_NAME.service"
 
 # Verifica si un archivo existe.
 #
@@ -31,7 +32,6 @@ file_already_exists() {
   return 1  # Código si el archivo no existe.
 }
 
-# Función principal (mejor modularización)
 create_service() {
   # Verifica si el archivo ya existe (salida temprana)
   if file_already_exists "$SERVICE_FILE"; then
@@ -71,11 +71,34 @@ EOF
 
 create_ln_service() {
   # Verifica si el archivo ya existe (salida temprana)
-  if file_already_exists "$SERVICE_LN_FILE"; then
+  if file_already_exists "$LN_SERVICE_FILE"; then
     return 0  # Código de éxito
   fi
 
-  echo "Se crea enlace simbolico"
+  if ! command -v ln &> /dev/null; then
+    echo "Error: El comando 'ln' no está instalado." >&2
+    return 1
+  fi
+
+  ln -s "$SERVICE_FILE" "$LN_SERVICES_DIR"
+
+  if [ $? -eq 0 ]; then  # Verifica el código de salida de ln
+    echo "Enlace simbólico de servicio $JOB_NAME.service creado exitosamente."
+  else
+    echo "Error: Falló la creación del enlace simbólico."
+    return 1  # Código de error
+  fi
+
+  systemctl daemon-reload
+
+  if [ $? -eq 0 ]; then  # Verifica el código de salida de systemctl
+    echo "Systemctl recargado exitosamente."
+  else
+    echo "Error: Systemctl no recargado."
+    return 1  # Código de error
+  fi
+
+  return 0  # Código de éxito
 }
 
 # Verificación y creación del directorio (con manejo de errores)
@@ -87,11 +110,17 @@ if [ ! -d "$SERVICES_DIR" ]; then
   echo "Directorio $SERVICES_DIR creado."
 fi
 
-# Llamada a la función principal y manejo del código de retorno
 if create_service; then
-  echo "Proceso completado."
+  echo "Servicio $JOB_NAME creado exitosamente."
 else
-  echo "El proceso falló."
+  echo "Servicio $JOB_NAME no creado."
+  exit 1 # Salida del script con error
+fi
+
+if create_service; then
+  echo "Enlace simbólico de servicio $JOB_NAME creado exitosamente."
+else
+  echo "Enlace simbólico de servicio $JOB_NAME no creado."
   exit 1 # Salida del script con error
 fi
 
