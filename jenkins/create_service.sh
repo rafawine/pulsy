@@ -117,7 +117,7 @@ else
   exit 1 # Salida del script con error
 fi
 
-if create_service; then
+if create_ln_service; then
   echo "Enlace simbólico de servicio $JOB_NAME creado exitosamente."
 else
   echo "Enlace simbólico de servicio $JOB_NAME no creado."
