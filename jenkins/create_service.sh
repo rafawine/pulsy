@@ -3,12 +3,38 @@
 # Variables importantes al principio y en mayúsculas para mejor visibilidad
 SERVICES_DIR="$HOME/workspace/services"
 SERVICE_FILE="$SERVICES_DIR/$JOB_NAME.service"
+SERVICE_LN_FILE="/etc/systemd/system/$JOB_NAME.service"
+
+# Verifica si un archivo existe.
+#
+# Args:
+#   path_file: La ruta al archivo.
+#
+# Returns:
+#   0 si el archivo no existe.
+#   1 si el archivo existe o no se proporcionó una ruta.
+file_already_exists() {
+  local path_file="$1"
+
+  # Verifica si se proporcionó una ruta.
+  if [ -z "$path_file" ]; then
+    echo "Error: Se debe proporcionar la ruta del archivo." >&2
+    return 1
+  fi
+
+  # Verifica si el archivo ya existe.
+  if [ -f "$path_file" ]; then
+    echo "Error: El archivo '$path_file' ya existe." >&2
+    return 0
+  fi
+
+  return 1  # Código si el archivo no existe.
+}
 
 # Función principal (mejor modularización)
 create_service() {
   # Verifica si el archivo ya existe (salida temprana)
-  if [ -f "$SERVICE_FILE" ]; then
-    echo "Servicio $JOB_NAME ya existe. No se hará nada."
+  if file_already_exists "$SERVICE_FILE"; then
     return 0  # Código de éxito
   fi
 
@@ -41,6 +67,15 @@ EOF
     echo "Error: Falló la creación del archivo de servicio."
     return 1  # Código de error
   fi
+}
+
+create_ln_service() {
+  # Verifica si el archivo ya existe (salida temprana)
+  if file_already_exists "$SERVICE_LN_FILE"; then
+    return 0  # Código de éxito
+  fi
+
+  echo "Se crea enlace simbolico"
 }
 
 # Verificación y creación del directorio (con manejo de errores)
