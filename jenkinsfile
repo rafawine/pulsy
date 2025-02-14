@@ -19,6 +19,7 @@ pipeline {
         stage("execute_service") {
             steps{
                 sh './jenkins/execute_service.sh'
+                sh 'env|sort'
             }
         }
     }
