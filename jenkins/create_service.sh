@@ -80,7 +80,7 @@ create_ln_service() {
     return 1
   fi
 
-  ln -s "$SERVICE_FILE" "$LN_SERVICES_DIR"
+  sudo ln -s "$SERVICE_FILE" "$LN_SERVICES_DIR"
 
   if [ $? -eq 0 ]; then  # Verifica el código de salida de ln
     echo "Enlace simbólico de servicio $JOB_NAME.service creado exitosamente."
@@ -89,7 +89,7 @@ create_ln_service() {
     return 1  # Código de error
   fi
 
-  systemctl daemon-reload
+  sudo systemctl daemon-reload
 
   if [ $? -eq 0 ]; then  # Verifica el código de salida de systemctl
     echo "Systemctl recargado exitosamente."
@@ -107,20 +107,20 @@ if [ ! -d "$SERVICES_DIR" ]; then
     echo "Error: No se pudo crear el directorio $SERVICES_DIR."
     exit 1 # Salida del script con error
   fi
-  echo "Directorio $SERVICES_DIR creado."
+  echo "Directorio $SERVICES_DIR creado exitosamente."
 fi
 
 if create_service; then
   echo "Servicio $JOB_NAME creado exitosamente."
 else
-  echo "Servicio $JOB_NAME no creado."
+  echo "Error: Servicio $JOB_NAME no creado."
   exit 1 # Salida del script con error
 fi
 
 if create_ln_service; then
   echo "Enlace simbólico de servicio $JOB_NAME creado exitosamente."
 else
-  echo "Enlace simbólico de servicio $JOB_NAME no creado."
+  echo "Error: Enlace simbólico de servicio $JOB_NAME no creado."
   exit 1 # Salida del script con error
 fi
 
