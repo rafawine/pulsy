@@ -1,6 +1,10 @@
 #!/bin/bash
 
-# Mejoras al código sh
+# Test variables de entorno:
+
+echo $GIN_MODE
+echo $PORT
+echo $POPROJECT_IDRT
 
 # 1. Manejo de errores: Verifica si go version y go build tienen éxito.
 if ! go version &> /dev/null; then
