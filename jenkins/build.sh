@@ -1,10 +1,8 @@
 #!/bin/bash
 
-# Test variables de entorno:
-
+# Imprimir variables
 echo $GIN_MODE
-echo $PORT
-echo $POPROJECT_IDRT
+echo $PROJECT_ID
 
 # 1. Manejo de errores: Verifica si go version y go build tienen éxito.
 if ! go version &> /dev/null; then
