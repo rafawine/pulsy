@@ -9,5 +9,10 @@ import (
 )
 
 func HealthCheckHandler(c *gin.Context) {
-	c.IndentedJSON(http.StatusAccepted, responses.Success("Pulsy API is running", nil))
+	message := "pulsy API is running"
+	data := map[string]interface{}{
+		"version": "1.0.0",
+	}
+
+	c.IndentedJSON(http.StatusAccepted, responses.Success(message, data))
 }
