@@ -1,21 +1,5 @@
 #!/bin/bash
 
-# Exportar varibles para compilar aplicación
-export $GIN_MODE
-export $PORT
-export $TYPE
-export $PROJECT_ID
-export $PRIVATE_KEY_ID
-export $PRIVATE_KEY
-export $CLIENT_EMAIL
-export $CLIENT_ID
-export $AUTH_URI
-export $TOKEN_URI
-export $AUTH_PROVIDER_CERT_URL
-export $CLIENT_CERT_URL
-export $UNIVERSE_DOMAIN
-export $BUCKET
-
 # Manejo de errores: Verifica si go version y go build tienen éxito.
 if ! go version &> /dev/null; then
   echo "Error: go no está instalado o no está en el PATH."
