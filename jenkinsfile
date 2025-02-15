@@ -7,23 +7,22 @@ pipeline {
         stage("build_app") {
             environment {
                 GIN_MODE = 'release'
+                PORT = credentials('port')
+                TYPE = credentials('type')
+                PROJECT_ID = credentials('project_id')
+                PRIVATE_KEY_ID = credentials('private_key_id')
+                PRIVATE_KEY = credentials('private_key')
+                CLIENT_EMAIL = credentials('client_email')
+                CLIENT_ID = credentials('client_id')
+                AUTH_URI = credentials('auth_uri')
+                TOKEN_URI = credentials('token_uri')
+                AUTH_PROVIDER_CERT_URL = credentials('auth_provider_cert_url')
+                CLIENT_CERT_URL = credentials('client_cert_url')
+                UNIVERSE_DOMAIN = credentials('universe_domain')
+                BUCKET = credentials('bucket')
             }
-            steps {
-                withCredentials([string(credentialsId: 'port', variable: 'PORT'), 
-                                string(credentialsId: 'type', variable: 'TYPE'),
-                                string(credentialsId: 'project_id', variable: 'PROJECT_ID'),
-                                string(credentialsId: 'private_key_id', variable: 'PRIVATE_KEY_ID'),
-                                string(credentialsId: 'private_key', variable: 'PRIVATE_KEY'),
-                                string(credentialsId: 'client_email', variable: 'CLIENT_EMAIL'),
-                                string(credentialsId: 'client_id', variable: 'CLIENT_ID'),
-                                string(credentialsId: 'auth_uri', variable: 'AUTH_URI'),
-                                string(credentialsId: 'token_uri', variable: 'TOKEN_URI'),
-                                string(credentialsId: 'auth_provider_cert_url', variable: 'AUTH_PROVIDER_CERT_URL'),
-                                string(credentialsId: 'client_cert_url', variable: 'CLIENT_CERT_URL'),
-                                string(credentialsId: 'universe_domain', variable: 'UNIVERSE_DOMAIN'),
-                                string(credentialsId: 'bucket', variable: 'BUCKET')]) {
-                    sh './jenkins/build.sh'
-                }
+            steps{
+                sh './jenkins/build.sh'
             }
         }
         stage("create_service") {
