@@ -8,20 +8,20 @@ pipeline {
     stages {
         stage("build_app") {
             environment {
-                GIN_MODE = 'release'
-                PORT = credentials('port')
-                TYPE = credentials('type')
-                PROJECT_ID = credentials('project_id')
-                PRIVATE_KEY_ID = credentials('private_key_id')
-                PRIVATE_KEY = credentials('private_key')
-                CLIENT_EMAIL = credentials('client_email')
-                CLIENT_ID = credentials('client_id')
-                AUTH_URI = credentials('auth_uri')
-                TOKEN_URI = credentials('token_uri')
-                AUTH_PROVIDER_CERT_URL = credentials('auth_provider_cert_url')
-                CLIENT_CERT_URL = credentials('client_cert_url')
-                UNIVERSE_DOMAIN = credentials('universe_domain')
-                BUCKET = credentials('bucket')
+                env.GIN_MODE = 'release'
+                env.PORT = credentials('port')
+                env.TYPE = credentials('type')
+                env.PROJECT_ID = credentials('project_id')
+                env.PRIVATE_KEY_ID = credentials('private_key_id')
+                env.PRIVATE_KEY = credentials('private_key')
+                env.CLIENT_EMAIL = credentials('client_email')
+                env.CLIENT_ID = credentials('client_id')
+                env.AUTH_URI = credentials('auth_uri')
+                env.TOKEN_URI = credentials('token_uri')
+                env.AUTH_PROVIDER_CERT_URL = credentials('auth_provider_cert_url')
+                env.CLIENT_CERT_URL = credentials('client_cert_url')
+                env.UNIVERSE_DOMAIN = credentials('universe_domain')
+                env.BUCKET = credentials('bucket')
             }
 
             steps{
