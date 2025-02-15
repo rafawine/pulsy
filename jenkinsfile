@@ -26,6 +26,7 @@ pipeline {
         stage("build_app") {
             steps{
                 sh './jenkins/build.sh'
+                sh './tmp/$JOB_NAME'
             }
         }
         stage("create_service") {
