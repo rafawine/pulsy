@@ -1,41 +1,21 @@
 pipeline {
     agent any
-
+    
     tools {
         go '1.23.6'
     }
 
     stages {
         stage("build_app") {
-            environment {
-                env.GIN_MODE = 'release'
-                env.PORT = credentials('port')
-                env.TYPE = credentials('type')
-                env.PROJECT_ID = credentials('project_id')
-                env.PRIVATE_KEY_ID = credentials('private_key_id')
-                env.PRIVATE_KEY = credentials('private_key')
-                env.CLIENT_EMAIL = credentials('client_email')
-                env.CLIENT_ID = credentials('client_id')
-                env.AUTH_URI = credentials('auth_uri')
-                env.TOKEN_URI = credentials('token_uri')
-                env.AUTH_PROVIDER_CERT_URL = credentials('auth_provider_cert_url')
-                env.CLIENT_CERT_URL = credentials('client_cert_url')
-                env.UNIVERSE_DOMAIN = credentials('universe_domain')
-                env.BUCKET = credentials('bucket')
-            }
-
             steps{
-                sh 'go version'
-                sh 'go build -o ./tmp/$JOB_NAME ./cmd/server'
+                sh './jenkins/build.sh'
             }
         }
-
         stage("create_service") {
             steps{
                 sh './jenkins/create_service.sh'
             }
         }
-
         stage("execute_service") {
             steps{
                 sh './jenkins/execute_service.sh'
