@@ -46,14 +46,14 @@ create_service() {
 
   cat << EOF > "$SERVICE_FILE"
 [Unit]
-Description="$descripcion"
+Description=$descripcion
 After=network.target
 
 [Service]
 Type=simple
-WorkingDirectory="$working_directory"
-User="$user"
-ExecStart="$execute"
+WorkingDirectory=$working_directory
+User=$user
+ExecStart=$execute
 Restart=always
 
 [Install]
