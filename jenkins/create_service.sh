@@ -113,15 +113,13 @@ fi
 if create_service; then
   echo "Servicio $JOB_NAME creado exitosamente."
 else
-  echo "Error: Servicio $JOB_NAME no creado."
-  exit 1 # Salida del script con error
+  echo "Error: Servicio $JOB_NAME ya existente."
 fi
 
 if create_ln_service; then
   echo "Enlace simbólico de servicio $JOB_NAME creado exitosamente."
 else
-  echo "Error: Enlace simbólico de servicio $JOB_NAME no creado."
-  exit 1 # Salida del script con error
+  echo "Error: Enlace simbólico de servicio $JOB_NAME ya existente."
 fi
 
 exit 0 # Salida del script con éxito
