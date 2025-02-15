@@ -1,17 +1,14 @@
 pipeline {
     agent any
-
     tools {
         go '1.23.6'
     }
-
-    
     stages {
         stage("build_app") {
+            environment {
+                GIN_MODE = 'release'
+            }
             steps {
-                environment {
-                    GIN_MODE = 'release'
-                }
                 withCredentials([string(credentialsId: 'port', variable: 'PORT'), 
                                 string(credentialsId: 'type', variable: 'TYPE'),
                                 string(credentialsId: 'project_id', variable: 'PROJECT_ID'),
