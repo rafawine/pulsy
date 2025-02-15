@@ -8,11 +8,25 @@ pipeline {
     stages {
         stage("build_app") {
             environment {
-                PULSY_ENV = credentials('pulsy_env')
+                GIN_MODE = 'release'
+                PORT = credentials('port')
+                TYPE = credentials('type')
+                PROJECT_ID = credentials('project_id')
+                PRIVATE_KEY_ID = credentials('private_key_id')
+                PRIVATE_KEY = credentials('private_key')
+                CLIENT_EMAIL = credentials('client_email')
+                CLIENT_ID = credentials('client_id')
+                AUTH_URI = credentials('auth_uri')
+                TOKEN_URI = credentials('token_uri')
+                AUTH_PROVIDER_CERT_URL = credentials('auth_provider_cert_url')
+                CLIENT_CERT_URL = credentials('client_cert_url')
+                UNIVERSE_DOMAIN = credentials('universe_domain')
+                BUCKET = credentials('bucket')
             }
+
             steps{
-                sh 'source $PULSY_ENV'
-                sh '/jenkins/build.sh'
+                sh 'go version'
+                sh 'go build -o ./tmp/$JOB_NAME ./cmd/server'
             }
         }
 
