@@ -6,12 +6,12 @@ pipeline {
     }
 
     stages {
-        stage("build") {
+        stage("Build API") {
             steps{
                 sh './jenkins/build.sh'
             }
         }
-        stage("deploy") {
+        stage("Deploy API") {
             steps{
                 sh './jenkins/deploy.sh'
             }
