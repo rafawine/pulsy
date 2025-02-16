@@ -16,7 +16,7 @@ else
   echo "Error: No se pudo determinar el estado del servicio $JOB_NAME."
 fi
 
-sudo systemctl status "$JOB_NAME"; then
+if sudo systemctl status "$JOB_NAME"; then
   echo "Error: No se pudo obtener el estatus del servicio $JOB_NAME."
   return 1
 fi
