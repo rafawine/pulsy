@@ -19,6 +19,25 @@ pipeline {
     }
 
     stages {
+        stage("Generate .env file") {
+            steps {
+                sh 'echo "GIN_MODE=\"$GIN_MODE\"" >".env"'
+                sh 'echo "PORT=\"$PORT\"" >>".env"'
+                sh 'echo "TYPE=\"$TYPE\"" >>".env"'
+                sh 'echo "PROJECT_ID=\"$PROJECT_ID\"" >>".env"'
+                sh 'echo "PRIVATE_KEY_ID=\"$PRIVATE_KEY_ID\"" >>".env"'
+                sh 'echo "PRIVATE_KEY=\"$PRIVATE_KEY\"" >>".env"'
+                sh 'echo "CLIENT_EMAIL=\"$CLIENT_EMAIL\"" >>".env"'
+                sh 'echo "CLIENT_ID=\"$CLIENT_ID\"" >>".env"'
+                sh 'echo "AUTH_URI=\"$AUTH_URI\"" >>".env"'
+                sh 'echo "TOKEN_URI=\"$TOKEN_URI\"" >>".env"'
+                sh 'echo "AUTH_PROVIDER_CERT_URL=\"$AUTH_PROVIDER_CERT_URL\"" >>".env"'
+                sh 'echo "CLIENT_CERT_URL=\"$CLIENT_CERT_URL\"" >>".env"'
+                sh 'echo "UNIVERSE_DOMAIN=\"$UNIVERSE_DOMAIN\"" >>".env"'
+                sh 'echo "BUCKET=\"$BUCKET\"" >>".env"'
+            }
+        }
+
         stage("Build & Run Docker Compose") {
             steps {
                 sh 'docker compose down'
