@@ -1,5 +1,5 @@
 # Etapa 1: Compilar binario en una imagen grande
-FROM golang:1.24 AS builder
+FROM golang:latest AS builder
 
 WORKDIR /app
 
