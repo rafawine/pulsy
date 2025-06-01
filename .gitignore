@@ -23,6 +23,7 @@ go.work.sum
 
 # env fileclear
 .env
+env.sh
 
 # tmp file
 /tmp/

@@ -1,18 +1,13 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"os"
 
 	"pulsy/internal/firebase"
 	"pulsy/internal/routes"
 )
 
 func main() {
-	// Obtener puerto de ejecución
-	port := os.Getenv("PORT")
-
 	// Inicializar Firebase
 	firebase.InitializeFirebase()
 	firebase.InitializeStorage()
@@ -26,7 +21,7 @@ func main() {
 	router := routes.SetupRouter()
 
 	// Ejecutar servidor
-	err := router.Run(fmt.Sprintf(":%s", port))
+	err := router.Run(":4321")
 
 	if err != nil {
 		log.Fatalf("Failed to start server: %v", err)
