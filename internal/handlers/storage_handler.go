@@ -51,7 +51,7 @@ func UploadFileHandler(c *gin.Context) {
 	}
 
 	// Guardar archivo en Storage
-	err = services.UploadFile(os.Getenv("FIREBASE_STORAGE_BUCKET"), bucketFileName, file)
+	err = services.UploadFile(os.Getenv("BUCKET"), bucketFileName, file)
 
 	if err != nil {
 		message := "failed to upload file"
@@ -70,7 +70,7 @@ func UploadFileHandler(c *gin.Context) {
 
 	if err != nil {
 		// Eliminar el archivo del bucket si hubo un error
-		bucketErr := services.DeleteFile(os.Getenv("FIREBASE_STORAGE_BUCKET"), bucketFileName)
+		bucketErr := services.DeleteFile(os.Getenv("BUCKET"), bucketFileName)
 
 		var message string
 
@@ -207,7 +207,7 @@ func DownloadFileHandler(c *gin.Context) {
 	defer os.Remove(tempFile.Name()) // Se asegura que el archivo sea eliminado al finalizar
 
 	// Descargar el archivo al sistema local
-	err = services.DownloadFile(os.Getenv("FIREBASE_STORAGE_BUCKET"), bucketFileName, tempFile.Name())
+	err = services.DownloadFile(os.Getenv("BUCKET"), bucketFileName, tempFile.Name())
 	if err != nil {
 		message := "failed to download file"
 		errData := map[string]interface{}{
