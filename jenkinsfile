@@ -48,7 +48,7 @@ pipeline {
                 sh 'echo "CLIENT_ID=\"$SEC_CLIENT_ID\"" >>".env"'
                 sh 'echo "AUTH_URI=\"$SEC_AUTH_URI\"" >>".env"'
                 sh 'echo "TOKEN_URI=\"$SEC_TOKEN_URI\"" >>".env"'
-                sh 'echo "AUTH_PROVIDER_CERT_URL=\"$SEC_AUTH_PROVIDER_CERT_URL\"" >>".env"'Add commentMore actions
+                sh 'echo "AUTH_PROVIDER_CERT_URL=\"$SEC_AUTH_PROVIDER_CERT_URL\"" >>".env"'
                 sh 'echo "CLIENT_CERT_URL=\"$SEC_CLIENT_CERT_URL\"" >>".env"'
                 sh 'echo "UNIVERSE_DOMAIN=\"$SEC_UNIVERSE_DOMAIN\"" >>".env"'
                 sh 'echo "BUCKET=\"$SEC_BUCKET\"" >>".env"'
