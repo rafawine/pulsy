@@ -1,23 +1,6 @@
 pipeline {
     agent any
-
-    environment {
-        GIN_MODE = credentials('gin-mode')
-        PORT = credentials('back-port')
-        TYPE = credentials('fb-type') 
-        PROJECT_ID = credentials('fb-project-id')
-        PRIVATE_KEY_ID = credentials('fb-private-key-id')
-        PRIVATE_KEY = credentials('fb-private-key')
-        CLIENT_EMAIL = credentials('fb-client-email')
-        CLIENT_ID = credentials('fb-client-id')
-        AUTH_URI = credentials('fb-auth-uri')
-        TOKEN_URI = credentials('fb-token-uri')
-        AUTH_PROVIDER_CERT_URL = credentials('fb-auth-provider')
-        CLIENT_CERT_URL = credentials('fb-client-cert')
-        UNIVERSE_DOMAIN = credentials('fb-domain')
-        BUCKET = credentials('fb-bucket')
-    }
-
+    
     stages {
         stage("Verify tooling") {
             steps {
