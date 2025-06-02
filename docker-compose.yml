@@ -24,3 +24,9 @@ services:
       - UNIVERSE_DOMAIN=${UNIVERSE_DOMAIN}
       - BUCKET=${BUCKET}
     restart: unless-stopped
+    networks:
+      - api-gateway
+
+networks:
+  api-gateway:
+    external: true
