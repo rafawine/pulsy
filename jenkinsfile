@@ -1,19 +1,70 @@
 pipeline {
     agent any
 
-    tools {
-        go '1.23.6'
+    environment {
+        SEC_GIN_MODE = credentials('gin-mode')
+        SEC_PORT = credentials('back-port')
+        SEC_TYPE = credentials('fb-type') 
+        SEC_PROJECT_ID = credentials('fb-project-id')
+        SEC_PRIVATE_KEY_ID = credentials('fb-private-key-id')
+        SEC_PRIVATE_KEY = credentials('fb-private-key')
+        SEC_CLIENT_EMAIL = credentials('fb-client-email')
+        SEC_CLIENT_ID = credentials('fb-client-id')
+        SEC_AUTH_URI = credentials('fb-auth-uri')
+        SEC_TOKEN_URI = credentials('fb-token-uri')
+        SEC_AUTH_PROVIDER_CERT_URL = credentials('fb-auth-provider')
+        SEC_CLIENT_CERT_URL = credentials('fb-client-cert')
+        SEC_UNIVERSE_DOMAIN = credentials('fb-domain')
+        SEC_BUCKET = credentials('fb-bucket')
     }
 
     stages {
-        stage("Build API") {
-            steps{
-                sh './jenkins/build.sh'
+        stage("Verify tooling") {
+            steps {
+                sh '''
+                docker version
+                docker info
+                docker compose version 
+                curl --version
+                '''
             }
         }
-        stage("Deploy API") {
+
+        stage('Prune Docker data') {
+            steps {
+                sh 'docker system prune -a --volumes -f'
+            }
+        }
+
+        stage("Generate .env file") {
+            steps {
+                sh 'echo "GIN_MODE=\"$SEC_GIN_MODE\"" >".env"'
+                sh 'echo "PORT=\"$SEC_PORT\"" >>".env"'
+                sh 'echo "TYPE=\"$SEC_TYPE\"" >>".env"'
+                sh 'echo "PROJECT_ID=\"$SEC_PROJECT_ID\"" >>".env"'
+                sh 'echo "PRIVATE_KEY_ID=\"$SEC_PRIVATE_KEY_ID\"" >>".env"'
+                sh 'echo "PRIVATE_KEY=\"$SEC_PRIVATE_KEY\"" >>".env"'
+                sh 'echo "CLIENT_EMAIL=\"$SEC_CLIENT_EMAIL\"" >>".env"'
+                sh 'echo "CLIENT_ID=\"$SEC_CLIENT_ID\"" >>".env"'
+                sh 'echo "AUTH_URI=\"$SEC_AUTH_URI\"" >>".env"'
+                sh 'echo "TOKEN_URI=\"$SEC_TOKEN_URI\"" >>".env"'
+                sh 'echo "AUTH_PROVIDER_CERT_URL=\"$SEC_AUTH_PROVIDER_CERT_URL\"" >>".env"'
+                sh 'echo "CLIENT_CERT_URL=\"$SEC_CLIENT_CERT_URL\"" >>".env"'
+                sh 'echo "UNIVERSE_DOMAIN=\"$SEC_UNIVERSE_DOMAIN\"" >>".env"'
+                sh 'echo "BUCKET=\"$SEC_BUCKET\"" >>".env"'
+            }
+        }
+
+        stage('Start container') {
+            steps {
+                sh 'docker compose up -d --no-color --wait'
+                sh 'docker compose ps'
+            }
+        }
+
+        stage("Remove Hanging Images") {
             steps{
-                sh './jenkins/deploy.sh'
+                sh 'docker image prune -f'
             }
         }
     }
