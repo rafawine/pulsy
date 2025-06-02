@@ -36,6 +36,13 @@ pipeline {
             }
         }
 
+         stage('Create the container network') {
+            steps {
+                sh 'docker network inspect api-gateway >/dev/null 2>&1 || docker network create api-gateway'
+                sh 'docker network ls'
+            }
+        }
+
         stage("Generate .env file") {
             steps {
                 sh 'echo "GIN_MODE=\"$SEC_GIN_MODE\"" >".env"'
