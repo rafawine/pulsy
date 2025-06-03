@@ -21,12 +21,10 @@ pipeline {
     stages {
         stage("Verify tooling") {
             steps {
-                sh '''
-                docker version
-                docker info
-                docker compose version 
-                curl --version
-                '''
+                sh 'docker version'
+                sh 'docker info'
+                sh 'docker compose version'
+                sh 'curl --version'
             }
         }
 
@@ -36,9 +34,9 @@ pipeline {
             }
         }
 
-         stage('Create the container network') {
+        stage('Create the container network') {
             steps {
-                sh 'docker network inspect api-gateway >/dev/null 2>&1 || docker network create api-gateway'
+                sh 'docker network inspect rwservices >/dev/null 2>&1 || docker network create rwservices'
                 sh 'docker network ls'
             }
         }
