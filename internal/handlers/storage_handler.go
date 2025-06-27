@@ -18,9 +18,8 @@ import (
 )
 
 func UploadFileHandler(c *gin.Context) {
-	// Obtener el archivo de la solicitud
+	uuidOwner := c.Request.Header.Get("x-consumer-custom-id")
 	file, err := c.FormFile("file")
-
 	if err != nil {
 		message := "file not found"
 		errData := map[string]interface{}{
@@ -47,17 +46,18 @@ func UploadFileHandler(c *gin.Context) {
 		"extension":    fileExtension,
 		"size":         fileSize,
 		"creationDate": time.Now(),
-		"uuidOwner":    "rafiprogramando",
+		"uuidOwner":    uuidOwner,
 	}
 
 	// Guardar archivo en Storage
 	err = services.UploadFile(os.Getenv("BUCKET"), bucketFileName, file)
-
 	if err != nil {
 		message := "failed to upload file"
 		errData := map[string]interface{}{
+			"uuid":          fileUUID,
 			"fileName":      fileName,
 			"fileExtension": fileExtension,
+			"fileSize":      fileSize,
 			"cause":         err.Error(),
 		}
 
@@ -66,8 +66,7 @@ func UploadFileHandler(c *gin.Context) {
 	}
 
 	// Guardar metadatos en Firestore
-	err = services.InsertData("files", fileUUID, metadata)
-
+	err = services.CreateDoc("files", fileUUID, metadata)
 	if err != nil {
 		// Eliminar el archivo del bucket si hubo un error
 		bucketErr := services.DeleteFile(os.Getenv("BUCKET"), bucketFileName)
@@ -82,8 +81,10 @@ func UploadFileHandler(c *gin.Context) {
 		}
 
 		errData := map[string]interface{}{
+			"uuid":          fileUUID,
 			"fileName":      fileName,
 			"fileExtension": fileExtension,
+			"fileSize":      fileSize,
 			"cause":         err.Error(),
 		}
 
@@ -93,112 +94,53 @@ func UploadFileHandler(c *gin.Context) {
 
 	// Responder con éxito
 	message := "files uploaded successfully"
-	errData := map[string]interface{}{
+	successData := map[string]interface{}{
 		"uuid":          fileUUID,
 		"fileName":      fileName,
 		"fileExtension": fileExtension,
+		"fileFullName":  fileFullName,
 		"fileSize":      fileSize,
 	}
 
-	c.IndentedJSON(http.StatusAccepted, responses.Success(message, errData))
+	c.IndentedJSON(http.StatusAccepted, responses.Success(message, successData))
 }
 
 func DownloadFileHandler(c *gin.Context) {
-	fileUUID := c.Param("fileUUID") // Nombre del archivo en Firebase
+	uuidOwner := c.Request.Header.Get("x-consumer-custom-id")
+	fileUUID := c.Param("uuid")
 
-	var bucketFileName string
-	var fileFullName string
-	var fileExtension string
-	var fileSize int64
-
-	// Si UUID tiene 8 caracteres, se busca en Firestore
-	if len(fileUUID) == 8 {
-		// Criterios de búsqueda
-		conditions := []firebase.QueryCondition{
-			{Field: "uuid", Operator: "==", Value: fileUUID},
+	metadata, err := getMetadata(fileUUID, uuidOwner)
+	if err != nil {
+		message := "failed to get metadata"
+		errData := map[string]interface{}{
+			"uuid":  fileUUID,
+			"cause": err.Error(),
 		}
 
-		// Obtener metadatos del archivo
-		metadata, err := services.ReadMultipleDocs("files", conditions)
-
-		if err != nil {
-			message := "failed to get file metadata"
-			errData := map[string]interface{}{
-				"fileUUID": fileUUID,
-				"cause":    err.Error(),
-			}
-
-			c.IndentedJSON(http.StatusNotFound, responses.Error(message, errData))
-			return
-		}
-
-		if len(metadata) == 0 {
-			message := "file not found"
-			errData := map[string]interface{}{
-				"fileUUID": fileUUID,
-			}
-
-			c.IndentedJSON(http.StatusNotFound, responses.Error(message, errData))
-			return
-		}
-
-		if len(metadata) > 1 {
-			message := "multiple files found"
-			errData := map[string]interface{}{
-				"fileUUID": fileUUID,
-				"action":   "insert a file full uuid",
-			}
-
-			c.IndentedJSON(http.StatusMultipleChoices, responses.Error(message, errData))
-			return
-		}
-
-		fileUUID = metadata[0]["idDoc"].(string)
-		bucketFileName = fileUUID + metadata[0]["extension"].(string)
-		fileFullName = metadata[0]["fullName"].(string)
-		fileExtension = metadata[0]["extension"].(string)
-		fileSize = metadata[0]["size"].(int64)
-	} else {
-		_, err := uuid.Parse(fileUUID)
-
-		if err != nil {
-			message := "uuid not valid"
-			errData := map[string]interface{}{
-				"fileUUID": fileUUID,
-				"action":   "verify the uuid",
-			}
-
-			c.IndentedJSON(http.StatusBadRequest, responses.Error(message, errData))
-			return
-		}
-
-		// Obtener metadatos del archivo
-		metadata, err := services.ReadDoc("files", fileUUID)
-
-		if err != nil {
-			message := "failed to get metadata"
-			errData := map[string]interface{}{
-				"fileUUID": fileUUID,
-				"cause":    err.Error(),
-			}
-
-			c.IndentedJSON(http.StatusNotFound, responses.Error(message, errData))
-			return
-		}
-
-		bucketFileName = fileUUID + metadata["extension"].(string)
-		fileFullName = metadata["fullName"].(string)
-		fileExtension = metadata["extension"].(string)
-		fileSize = metadata["size"].(int64)
+		c.IndentedJSON(http.StatusNotFound, responses.Error(message, errData))
+		return
 	}
 
-	/// Crear archivo temporal seguro
+	if len(fileUUID) == 8 {
+		fileUUID = metadata["idDoc"].(string)
+	}
+
+	fileFullName := metadata["fullName"].(string)
+	fileName := metadata["name"].(string)
+	fileExtension := metadata["extension"].(string)
+	fileSize := metadata["size"].(int64)
+	bucketFileName := fileUUID + fileExtension
+
+	// Crear archivo temporal seguro
 	tempFile, err := os.CreateTemp("", fileFullName)
 	if err != nil {
 		message := "failed to create temporary file"
 		errData := map[string]interface{}{
-			"fileUUID": fileUUID,
-			"cause":    err.Error(),
+			"uuid":          fileUUID,
+			"fileName":      fileName,
+			"fileExtension": fileExtension,
+			"fileSize":      fileSize,
+			"cause":         err.Error(),
 		}
 
 		c.IndentedJSON(http.StatusInternalServerError, responses.Error(message, errData))
@@ -211,8 +153,11 @@ func DownloadFileHandler(c *gin.Context) {
 	if err != nil {
 		message := "failed to download file"
 		errData := map[string]interface{}{
-			"fileUUID": fileUUID,
-			"cause":    err.Error(),
+			"uuid":          fileUUID,
+			"fileName":      fileName,
+			"fileExtension": fileExtension,
+			"fileSize":      fileSize,
+			"cause":         err.Error(),
 		}
 
 		c.IndentedJSON(http.StatusInternalServerError, responses.Error(message, errData))
@@ -221,6 +166,7 @@ func DownloadFileHandler(c *gin.Context) {
 
 	// Usar mime.TypeByExtension para obtener el tipo MIME
 	contentType := mime.TypeByExtension(fileExtension)
+
 	if contentType == "" {
 		contentType = "application/octet-stream" // Tipo predeterminado si no se encuentra
 	}
@@ -231,4 +177,225 @@ func DownloadFileHandler(c *gin.Context) {
 
 	// Enviar el archivo como respuesta
 	c.File(tempFile.Name())
+}
+
+func UpdateFileHandler(c *gin.Context) {
+	uuidOwner := c.Request.Header.Get("x-consumer-custom-id")
+	fileUUID := c.Param("uuid")
+	file, err := c.FormFile("file")
+	if err != nil {
+		message := "file not found"
+		errData := map[string]interface{}{
+			"field": "file",
+			"cause": "file is required",
+		}
+
+		c.IndentedJSON(http.StatusBadRequest, responses.Error(message, errData))
+		return
+	}
+
+	metadata, err := getMetadata(fileUUID, uuidOwner)
+	if err != nil {
+		message := "failed to get metadata"
+		errData := map[string]interface{}{
+			"uuid":  fileUUID,
+			"cause": err.Error(),
+		}
+
+		c.IndentedJSON(http.StatusNotFound, responses.Error(message, errData))
+		return
+	}
+
+	if len(fileUUID) == 8 {
+		fileUUID = metadata["idDoc"].(string)
+	}
+
+	fileExtension := metadata["extension"].(string)
+
+	// Construir el nombre del archivo en el bucket
+	newFileFullName := file.Filename
+	newFileExtension := filepath.Ext(newFileFullName)
+	newFileName := strings.Replace(newFileFullName, newFileExtension, "", -1)
+	newFileSize := file.Size
+	bucketFileName := fileUUID + newFileExtension
+
+	// Verificar si se trata del mismo archivo
+	if !(newFileExtension == fileExtension) {
+		message := "failed to upload file"
+		errData := map[string]interface{}{
+			"uuid":          fileUUID,
+			"fileName":      newFileName,
+			"fileExtension": newFileExtension,
+			"fileSize":      newFileSize,
+			"cause":         "different type of file",
+		}
+
+		c.IndentedJSON(http.StatusConflict, responses.Error(message, errData))
+		return
+	}
+
+	newMetadata := map[string]interface{}{
+		"fullName": newFileFullName,
+		"name":     newFileName,
+		"size":     newFileSize,
+	}
+
+	// Actualizar archivo en Storage
+	err = services.UploadFile(os.Getenv("BUCKET"), bucketFileName, file)
+	if err != nil {
+		message := "failed to upload file"
+		errData := map[string]interface{}{
+			"uuid":          fileUUID,
+			"fileName":      newFileName,
+			"fileExtension": newFileExtension,
+			"fileSize":      newFileSize,
+			"cause":         err.Error(),
+		}
+
+		c.IndentedJSON(http.StatusConflict, responses.Error(message, errData))
+		return
+	}
+
+	// Actualizar metadatos en Firestore
+	err = services.UpdateDoc("files", fileUUID, newMetadata)
+	if err != nil {
+		message := "failed to update metadata"
+		errData := map[string]interface{}{
+			"uuid":          fileUUID,
+			"fileName":      newFileName,
+			"fileExtension": newFileExtension,
+			"fileSize":      newFileSize,
+			"cause":         err.Error(),
+		}
+
+		c.IndentedJSON(http.StatusConflict, responses.Error(message, errData))
+		return
+	}
+
+	// Responder con éxito
+	message := "files uploaded successfully"
+	successData := map[string]interface{}{
+		"uuid":          fileUUID,
+		"fileName":      newFileName,
+		"fileExtension": newFileExtension,
+		"fileFullName":  newFileFullName,
+		"fileSize":      newFileSize,
+	}
+
+	c.IndentedJSON(http.StatusAccepted, responses.Success(message, successData))
+}
+
+func DeleteFileHandler(c *gin.Context) {
+	uuidOwner := c.Request.Header.Get("x-consumer-custom-id")
+	fileUUID := c.Param("uuid")
+
+	metadata, err := getMetadata(fileUUID, uuidOwner)
+	if err != nil {
+		message := "failed to get metadata"
+		errData := map[string]interface{}{
+			"uuid":  fileUUID,
+			"cause": err.Error(),
+		}
+
+		c.IndentedJSON(http.StatusNotFound, responses.Error(message, errData))
+		return
+	}
+
+	if len(fileUUID) == 8 {
+		fileUUID = metadata["idDoc"].(string)
+	}
+
+	fileFullName := metadata["fullName"].(string)
+	fileName := metadata["name"].(string)
+	fileExtension := metadata["extension"].(string)
+	fileSize := metadata["size"].(int64)
+	bucketFileName := fileUUID + fileExtension
+
+	// Eliminar el archivo del bucket
+	err = services.DeleteFile(os.Getenv("BUCKET"), bucketFileName)
+	if err != nil {
+		message := "failed to delete file"
+		errData := map[string]interface{}{
+			"uuid":          fileUUID,
+			"fileName":      fileName,
+			"fileExtension": fileExtension,
+			"fileSize":      fileSize,
+			"cause":         err.Error(),
+		}
+
+		c.IndentedJSON(http.StatusInternalServerError, responses.Error(message, errData))
+		return
+	}
+
+	// Eliminar registro de Firestore
+	err = services.DeleteDoc("files", fileUUID)
+	if err != nil {
+		message := "failed to delete metadata"
+		errData := map[string]interface{}{
+			"uuid":          fileUUID,
+			"fileName":      fileName,
+			"fileExtension": fileExtension,
+			"fileSize":      fileSize,
+			"cause":         err.Error(),
+		}
+
+		c.IndentedJSON(http.StatusInternalServerError, responses.Error(message, errData))
+		return
+	}
+
+	// Responder con éxito
+	message := "files delete successfully"
+	successData := map[string]interface{}{
+		"uuid":          fileUUID,
+		"fileName":      fileName,
+		"fileExtension": fileExtension,
+		"fileFullName":  fileFullName,
+		"fileSize":      fileSize,
+	}
+
+	c.IndentedJSON(http.StatusAccepted, responses.Success(message, successData))
+}
+
+func getMetadata(uuidFile string, uuidOwner string) (map[string]interface{}, error) {
+	// Verificar si el UUID es de 8 caracteres
+	if len(uuidFile) == 8 {
+		// Criterios de búsqueda
+		conditions := []firebase.QueryCondition{
+			{Field: "uuid", Operator: "==", Value: uuidFile},
+			{Field: "uuidOwner", Operator: "==", Value: uuidOwner},
+		}
+
+		// Obtener metadatos del archivo
+		metadata, err := services.ReadMultipleDocs("files", conditions)
+		if err != nil {
+			return nil, err
+		}
+
+		if len(metadata) == 0 {
+			return nil, fmt.Errorf("file not found, verify the uuid")
+		}
+
+		if len(metadata) > 1 {
+			return nil, fmt.Errorf("multiple files found, insert a file full uuid")
+		}
+
+		return metadata[0], nil
+	} else {
+		_, err := uuid.Parse(uuidFile)
+		if err != nil {
+			return nil, err
+		}
+
+		// Obtener metadatos del archivo
+		metadata, err := services.ReadDoc("files", uuidFile)
+		if err != nil {
+			return nil, err
+		}
+
+		if !(metadata["uuidOwner"] == uuidOwner) {
+			return nil, fmt.Errorf("file not found, verify the uuid")
+		}
+
+		return metadata, nil
+	}
 }

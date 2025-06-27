@@ -11,7 +11,7 @@ import (
 func HealthCheckHandler(c *gin.Context) {
 	message := "pulsy API is running"
 	data := map[string]interface{}{
-		"version": "1.0.0",
+		"version": "2.0.0",
 	}
 
 	c.IndentedJSON(http.StatusAccepted, responses.Success(message, data))

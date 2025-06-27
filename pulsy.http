@@ -1,0 +1,54 @@
+@host = http://0:4321
+@uuidOwner = 96c1e6cf-8b44-4366-b35c-75f2303076fc
+@uuid = c390ce2f
+# c390ce2f-dfc7-42dc-af6b-424c30e9925f
+
+###
+
+# @name Health Check
+# @description Pulsy service Health Check
+GET /health
+
+###
+
+# @name Upload File
+# @description Upload File to Storage
+POST /file
+x-consumer-custom-id: {{uuidOwner}}
+Content-Type: multipart/form-data; boundary=WebKitFormBoundary
+
+--WebKitFormBoundary
+Content-Disposition: form-data; name="file"; filename="share.txt"
+
+< ./share.txt
+--WebKitFormBoundary--
+
+###
+
+# @name Download File
+# @description Download File from Storage
+GET /file/{{uuid}}
+x-consumer-custom-id: {{uuidOwner}}
+
+###
+
+# @name Update File
+# @description Update File to Storage
+PUT /file/{{uuid}}
+x-consumer-custom-id: {{uuidOwner}}
+Content-Type: multipart/form-data; boundary=WebKitFormBoundary
+
+--WebKitFormBoundary
+Content-Disposition: form-data; name="file"; filename="share.txt"
+
+< ./share.txt
+--WebKitFormBoundary--
+
+###
+
+# @name Delete File
+# @description Delete File from Storage
+DELETE /file/{{uuid}}
+x-consumer-custom-id: {{uuidOwner}}
+
+###

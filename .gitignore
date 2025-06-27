@@ -27,3 +27,7 @@ env.sh
 
 # tmp file
 /tmp/
+
+# firebase studio
+dev.nix
+settings.json

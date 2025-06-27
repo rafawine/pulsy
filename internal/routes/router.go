@@ -16,9 +16,12 @@ func SetupRouter() *gin.Engine {
 	// Health Check
 	router.GET("/health", handlers.HealthCheckHandler)
 
-	// File Routes
-	router.POST("/upload", handlers.UploadFileHandler)
-	router.GET("/download/:fileUUID", handlers.DownloadFileHandler)
+	// File routes V2
+	fileRouter := router.Group("/file")
+	fileRouter.POST("/", handlers.UploadFileHandler)
+	fileRouter.GET("/:uuid", handlers.DownloadFileHandler)
+	fileRouter.PUT("/:uuid", handlers.UpdateFileHandler)
+	fileRouter.DELETE("/:uuid", handlers.DeleteFileHandler)
 
 	return router
 }

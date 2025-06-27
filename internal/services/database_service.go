@@ -5,9 +5,11 @@ import (
 	"time"
 
 	"pulsy/internal/firebase"
+
+	"cloud.google.com/go/firestore"
 )
 
-func InsertData(collection string, document string, data map[string]interface{}) error {
+func CreateDoc(collection string, document string, data map[string]interface{}) error {
 
 	client := firebase.FirestoreClient
 
@@ -18,6 +20,48 @@ func InsertData(collection string, document string, data map[string]interface{})
 
 	if err != nil {
 		return fmt.Errorf("failed insert data: %v", err)
+	}
+
+	return nil
+}
+
+func ReadDoc(collection string, document string) (map[string]interface{}, error) {
+	client := firebase.FirestoreClient
+
+	ctx, cancel := firebase.GetNewContextWithTimeout(3 * time.Second)
+	defer cancel()
+
+	doc, err := client.Collection(collection).Doc(document).Get(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error getting document: %v", err)
+	}
+
+	return doc.Data(), nil
+}
+
+func UpdateDoc(collection string, document string, data map[string]interface{}) error {
+	client := firebase.FirestoreClient
+
+	ctx, cancel := firebase.GetNewContextWithTimeout(3 * time.Second)
+	defer cancel()
+
+	_, err := client.Collection(collection).Doc(document).Set(ctx, data, firestore.MergeAll)
+	if err != nil {
+		return fmt.Errorf("error updating document: %v", err)
+	}
+
+	return nil
+}
+
+func DeleteDoc(collection string, document string) error {
+	client := firebase.FirestoreClient
+
+	ctx, cancel := firebase.GetNewContextWithTimeout(3 * time.Second)
+	defer cancel()
+
+	_, err := client.Collection(collection).Doc(document).Delete(ctx)
+	if err != nil {
+		return fmt.Errorf("error deleting document: %v", err)
 	}
 
 	return nil
@@ -56,18 +100,4 @@ func ReadMultipleDocs(collection string, conditions []firebase.QueryCondition) (
 	}
 
 	return results, nil
-}
-
-func ReadDoc(collection string, document string) (map[string]interface{}, error) {
-	client := firebase.FirestoreClient
-
-	ctx, cancel := firebase.GetNewContextWithTimeout(3 * time.Second)
-	defer cancel()
-
-	doc, err := client.Collection(collection).Doc(document).Get(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("error getting document: %v", err)
-	}
-
-	return doc.Data(), nil
 }
