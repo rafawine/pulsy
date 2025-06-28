@@ -60,6 +60,12 @@ pipeline {
             }
         }
 
+        stage('Build containers') {
+            steps {
+                sh 'docker compose build --no-cache'
+            }
+        }
+
         stage('Start container') {
             steps {
                 sh 'docker compose down'
